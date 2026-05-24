@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import ProductImage from './ProductImage';
 
-const PedidoForm = ({ onSubmit, onCancel, pedidoAEditar, productos }) => {
+const PedidoForm = ({ onSubmit, onCancel, pedidoAEditar, productos, inModal = false }) => {
     const [formData, setFormData] = useState({
         cliente: '',
         correoCliente: '',
@@ -101,12 +101,17 @@ const PedidoForm = ({ onSubmit, onCancel, pedidoAEditar, productos }) => {
         (p) => String(p.id) === String(formData.productoId)
     );
 
+    const wrapperClass = inModal ? '' : 'card bg-base-100 shadow-xl border border-base-300';
+    const bodyClass = inModal ? '' : 'card-body';
+
     return (
-        <div className="card bg-base-100 shadow-xl border border-base-200">
-            <div className="card-body">
-                <h3 className="card-title text-xl mb-4">
-                    {pedidoAEditar ? 'Editar Pedido' : 'Nuevo Pedido'}
-                </h3>
+        <div className={wrapperClass}>
+            <div className={bodyClass}>
+                {!inModal && (
+                    <h3 className="card-title text-xl mb-4">
+                        {pedidoAEditar ? 'Editar Pedido' : 'Nuevo Pedido'}
+                    </h3>
+                )}
 
                 {error && (
                     <div className="alert alert-error shadow-sm p-3 mb-4 text-sm">

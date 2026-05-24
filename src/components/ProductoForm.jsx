@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import ProductImage from './ProductImage';
 
-const ProductoForm = ({ onSubmit, onCancel, productoAEditar }) => {
+const ProductoForm = ({ onSubmit, onCancel, productoAEditar, inModal = false }) => {
     const [formData, setFormData] = useState({
         nombre: '',
         descripcion: '',
@@ -72,12 +72,17 @@ const ProductoForm = ({ onSubmit, onCancel, productoAEditar }) => {
         onSubmit(productoParseado);
     };
 
+    const wrapperClass = inModal ? '' : 'card bg-base-100 shadow-xl border border-base-300';
+    const bodyClass = inModal ? '' : 'card-body';
+
     return (
-        <div className="card bg-base-100 shadow-xl border border-base-300">
-            <div className="card-body">
-                <h3 className="card-title text-xl mb-4">
-                    {productoAEditar ? 'Editar Producto' : 'Nuevo Producto'}
-                </h3>
+        <div className={wrapperClass}>
+            <div className={bodyClass}>
+                {!inModal && (
+                    <h3 className="card-title text-xl mb-4">
+                        {productoAEditar ? 'Editar Producto' : 'Nuevo Producto'}
+                    </h3>
+                )}
 
                 {error && (
                     <div className="alert alert-error shadow-sm p-3 mb-4 text-sm">

@@ -13,6 +13,7 @@ import PedidoList from './components/PedidoList';
 import PedidoForm from './components/PedidoForm';
 import StatsCards from './components/StatsCards';
 import ThemeToggle from './components/ThemeToggle';
+import FormModal from './components/FormModal';
 
 function App() {
     const { user, loading: authLoading, logout } = useAuth();
@@ -190,6 +191,16 @@ function App() {
         ];
     }, [pedidos]);
 
+    const cerrarFormProducto = () => {
+        setFormProductoVisible(false);
+        setProductoAEditar(null);
+    };
+
+    const cerrarFormPedido = () => {
+        setFormPedidoVisible(false);
+        setPedidoAEditar(null);
+    };
+
     const handleLogout = () => {
         logout();
         toast.success('Sesión cerrada correctamente.');
@@ -253,10 +264,10 @@ function App() {
                         <div className="flex justify-between items-center mb-6">
                             <h2 className="text-2xl font-semibold">Productos</h2>
                             <button
-                                className={`btn ${formProductoVisible ? 'btn-neutral' : 'btn-primary'}`}
-                                onClick={() => { setProductoAEditar(null); setFormProductoVisible(!formProductoVisible); }}
+                                className="btn btn-primary"
+                                onClick={() => { setProductoAEditar(null); setFormProductoVisible(true); }}
                             >
-                                {formProductoVisible ? 'Cerrar' : '+ Nuevo Producto'}
+                                + Nuevo Producto
                             </button>
                         </div>
                         {errorProductos && (
@@ -267,30 +278,32 @@ function App() {
                         {!loadingProductos && productos.length > 0 && (
                             <StatsCards items={statsProductos} />
                         )}
-                        <div className="flex flex-col lg:flex-row gap-6 items-start">
-                            <div className={`w-full transition-all duration-300 ${formProductoVisible ? 'lg:w-2/3' : 'lg:w-full'}`}>
-                                {loadingProductos ? (
-                                    <div className="flex justify-center p-12">
-                                        <span className="loading loading-spinner loading-lg text-primary"></span>
-                                    </div>
-                                ) : (
-                                    <ProductoList
-                                        productos={productos}
-                                        onEdit={handleEditarProducto}
-                                        onDelete={handleEliminarProducto}
-                                    />
-                                )}
-                            </div>
-                            {formProductoVisible && (
-                                <div className="w-full lg:w-1/3 sticky top-6">
-                                    <ProductoForm
-                                        onSubmit={handleCrearOActualizarProducto}
-                                        onCancel={() => { setFormProductoVisible(false); setProductoAEditar(null); }}
-                                        productoAEditar={productoAEditar}
-                                    />
+                        <div className="w-full">
+                            {loadingProductos ? (
+                                <div className="flex justify-center p-12">
+                                    <span className="loading loading-spinner loading-lg text-primary"></span>
                                 </div>
+                            ) : (
+                                <ProductoList
+                                    productos={productos}
+                                    onEdit={handleEditarProducto}
+                                    onDelete={handleEliminarProducto}
+                                />
                             )}
                         </div>
+
+                        <FormModal
+                            open={formProductoVisible}
+                            onClose={cerrarFormProducto}
+                            title={productoAEditar ? 'Editar Producto' : 'Nuevo Producto'}
+                        >
+                            <ProductoForm
+                                inModal
+                                onSubmit={handleCrearOActualizarProducto}
+                                onCancel={cerrarFormProducto}
+                                productoAEditar={productoAEditar}
+                            />
+                        </FormModal>
                     </>
                 )}
 
@@ -300,10 +313,10 @@ function App() {
                         <div className="flex justify-between items-center mb-6">
                             <h2 className="text-2xl font-semibold">Pedidos</h2>
                             <button
-                                className={`btn ${formPedidoVisible ? 'btn-neutral' : 'btn-primary'}`}
-                                onClick={() => { setPedidoAEditar(null); setFormPedidoVisible(!formPedidoVisible); }}
+                                className="btn btn-primary"
+                                onClick={() => { setPedidoAEditar(null); setFormPedidoVisible(true); }}
                             >
-                                {formPedidoVisible ? 'Cerrar' : '+ Nuevo Pedido'}
+                                + Nuevo Pedido
                             </button>
                         </div>
                         {errorPedidos && (
@@ -314,32 +327,34 @@ function App() {
                         {!loadingPedidos && pedidos.length > 0 && (
                             <StatsCards items={statsPedidos} />
                         )}
-                        <div className="flex flex-col lg:flex-row gap-6 items-start">
-                            <div className={`w-full transition-all duration-300 ${formPedidoVisible ? 'lg:w-2/3' : 'lg:w-full'}`}>
-                                {loadingPedidos ? (
-                                    <div className="flex justify-center p-12">
-                                        <span className="loading loading-spinner loading-lg text-primary"></span>
-                                    </div>
-                                ) : (
-                                    <PedidoList
-                                        pedidos={pedidos}
-                                        onEdit={handleEditarPedido}
-                                        onDelete={handleEliminarPedido}
-                                        onCambiarEstado={handleCambiarEstadoPedido}
-                                    />
-                                )}
-                            </div>
-                            {formPedidoVisible && (
-                                <div className="w-full lg:w-1/3 sticky top-6">
-                                    <PedidoForm
-                                        onSubmit={handleCrearOActualizarPedido}
-                                        onCancel={() => { setFormPedidoVisible(false); setPedidoAEditar(null); }}
-                                        pedidoAEditar={pedidoAEditar}
-                                        productos={productos}
-                                    />
+                        <div className="w-full">
+                            {loadingPedidos ? (
+                                <div className="flex justify-center p-12">
+                                    <span className="loading loading-spinner loading-lg text-primary"></span>
                                 </div>
+                            ) : (
+                                <PedidoList
+                                    pedidos={pedidos}
+                                    onEdit={handleEditarPedido}
+                                    onDelete={handleEliminarPedido}
+                                    onCambiarEstado={handleCambiarEstadoPedido}
+                                />
                             )}
                         </div>
+
+                        <FormModal
+                            open={formPedidoVisible}
+                            onClose={cerrarFormPedido}
+                            title={pedidoAEditar ? 'Editar Pedido' : 'Nuevo Pedido'}
+                        >
+                            <PedidoForm
+                                inModal
+                                onSubmit={handleCrearOActualizarPedido}
+                                onCancel={cerrarFormPedido}
+                                pedidoAEditar={pedidoAEditar}
+                                productos={productos}
+                            />
+                        </FormModal>
                     </>
                 )}
             </main>
