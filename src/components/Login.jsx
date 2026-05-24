@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import ThemeToggle from './ThemeToggle';
 
 const Login = () => {
     const { login } = useAuth();
@@ -21,7 +22,10 @@ const Login = () => {
     };
 
     return (
-        <div className="min-h-screen bg-base-200 flex items-center justify-center px-4">
+        <div className="min-h-screen bg-base-200 flex items-center justify-center px-4 relative">
+            <div className="absolute top-4 right-4">
+                <ThemeToggle />
+            </div>
             <div className="card w-full max-w-md bg-base-100 shadow-xl border border-base-300">
                 <div className="card-body">
                     <div className="text-center mb-2">

@@ -1,10 +1,45 @@
+import { useState, useMemo } from 'react';
 import ProductImage from './ProductImage';
+import ActionButtons from './ActionButtons';
+import ExportButtons from './ExportButtons';
+import Pagination from './Pagination';
+import { usePagination } from '../hooks/usePagination';
+import { exportProductosExcel, exportProductosPDF } from '../utils/exportData';
+
+const ITEMS_GRID = 6;
+const ITEMS_TABLE = 8;
 
 const ProductoList = ({ productos, onEdit, onDelete }) => {
+    const [busqueda, setBusqueda] = useState('');
+    const [vista, setVista] = useState('grid');
+
+    const productosFiltrados = useMemo(() => {
+        if (!busqueda.trim()) return productos;
+        const q = busqueda.toLowerCase();
+        return productos.filter(
+            (p) =>
+                p.nombre?.toLowerCase().includes(q) ||
+                p.descripcion?.toLowerCase().includes(q) ||
+                String(p.id).includes(q)
+        );
+    }, [productos, busqueda]);
+
+    const itemsPerPage = vista === 'grid' ? ITEMS_GRID : ITEMS_TABLE;
+    const resetKey = `${busqueda}-${vista}`;
+
+    const {
+        page,
+        setPage,
+        totalPages,
+        paginatedItems,
+        totalItems,
+        from,
+        to,
+    } = usePagination(productosFiltrados, itemsPerPage, resetKey);
 
     if (!productos || productos.length === 0) {
         return (
-            <div className="card bg-base-100 shadow-md">
+            <div className="card bg-base-100 shadow-md border border-base-300">
                 <div className="card-body items-center text-center py-16">
                     <p className="text-base-content/60 text-lg">No hay productos registrados. ¡Crea uno nuevo!</p>
                 </div>
@@ -13,67 +48,175 @@ const ProductoList = ({ productos, onEdit, onDelete }) => {
     }
 
     return (
-        <div className="bg-base-100 shadow-md rounded-box overflow-hidden border border-base-300">
-            <div className="overflow-x-auto">
-                <table className="table table-zebra w-full">
-                    <thead className="bg-base-200 text-base-content">
-                        <tr>
-                            <th className="w-28">Foto</th>
-                            <th>ID</th>
-                            <th>Nombre</th>
-                            <th>Descripción</th>
-                            <th>Precio</th>
-                            <th>Stock</th>
-                            <th>Estado</th>
-                            <th className="text-center">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {productos.map((producto) => (
-                            <tr key={producto.id} className="hover">
-                                <td className="py-3">
+        <div className="space-y-4">
+            <div className="flex flex-col lg:flex-row gap-3 items-stretch lg:items-center justify-between">
+                <label className="input input-bordered flex items-center gap-2 flex-1 max-w-md bg-base-100">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 opacity-50 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    <input
+                        type="search"
+                        placeholder="Buscar por nombre, descripción o ID..."
+                        className="grow"
+                        value={busqueda}
+                        onChange={(e) => setBusqueda(e.target.value)}
+                    />
+                </label>
+                <div className="flex flex-wrap gap-2 items-center justify-end">
+                    <ExportButtons
+                        disabled={productosFiltrados.length === 0}
+                        onExportExcel={() => exportProductosExcel(productosFiltrados)}
+                        onExportPDF={() => exportProductosPDF(productosFiltrados)}
+                    />
+                    <div className="join shadow-sm">
+                        <button
+                            type="button"
+                            className={`join-item btn btn-sm ${vista === 'grid' ? 'btn-primary' : 'btn-ghost'}`}
+                            onClick={() => setVista('grid')}
+                        >
+                            Tarjetas
+                        </button>
+                        <button
+                            type="button"
+                            className={`join-item btn btn-sm ${vista === 'table' ? 'btn-primary' : 'btn-ghost'}`}
+                            onClick={() => setVista('table')}
+                        >
+                            Tabla
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            {productosFiltrados.length === 0 ? (
+                <div className="alert bg-base-100 border border-base-300">
+                    <span>No se encontraron productos con &quot;{busqueda}&quot;</span>
+                </div>
+            ) : vista === 'grid' ? (
+                <>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
+                        {paginatedItems.map((producto) => (
+                            <div
+                                key={producto.id}
+                                className="card bg-base-100 shadow-md border border-base-300 hover:shadow-lg transition-shadow overflow-hidden"
+                            >
+                                <figure className="bg-base-200 px-6 pt-6 pb-2 flex justify-center">
                                     <ProductImage
                                         src={producto.imagenUrl}
                                         alt={producto.nombre}
-                                        size="md"
+                                        size="lg"
                                         zoomable
                                     />
-                                </td>
-                                <td>{producto.id}</td>
-                                <td className="font-semibold">{producto.nombre}</td>
-                                <td className="text-base-content/70 max-w-xs truncate" title={producto.descripcion}>
-                                    {producto.descripcion || '-'}
-                                </td>
-                                <td className="font-medium text-success">
-                                    S/ {Number(producto.precio).toFixed(2)}
-                                </td>
-                                <td>{producto.stock} unds.</td>
-                                <td>
-                                    <div className={`badge ${producto.estado ? 'badge-success' : 'badge-error'}`}>
-                                        {producto.estado ? 'Activo' : 'Inactivo'}
+                                </figure>
+                                <div className="card-body pt-3 gap-3">
+                                    <div className="flex items-start justify-between gap-2">
+                                        <div>
+                                            <h3 className="font-bold text-lg leading-tight">{producto.nombre}</h3>
+                                            <p className="text-xs text-base-content/50">ID #{producto.id}</p>
+                                        </div>
+                                        <div className={`badge badge-sm ${producto.estado ? 'badge-success' : 'badge-error'}`}>
+                                            {producto.estado ? 'Activo' : 'Inactivo'}
+                                        </div>
                                     </div>
-                                </td>
-                                <td className="flex justify-center gap-2">
-                                    <button
-                                        className="btn btn-sm btn-ghost text-info"
-                                        onClick={() => onEdit(producto)}
-                                        title="Editar"
-                                    >
-                                        Editar
-                                    </button>
-                                    <button
-                                        className="btn btn-sm btn-ghost text-error"
-                                        onClick={() => onDelete(producto.id)}
-                                        title="Eliminar"
-                                    >
-                                        Eliminar
-                                    </button>
-                                </td>
-                            </tr>
+                                    <p className="text-sm text-base-content/70 line-clamp-2 min-h-[2.5rem]">
+                                        {producto.descripcion || 'Sin descripción'}
+                                    </p>
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-xl font-bold text-success">
+                                            S/ {Number(producto.precio).toFixed(2)}
+                                        </span>
+                                        <span className={`text-sm font-medium ${producto.stock <= 5 ? 'text-warning' : 'text-base-content/60'}`}>
+                                            {producto.stock} unds.
+                                            {producto.stock <= 5 && producto.stock > 0 && ' · Stock bajo'}
+                                            {producto.stock === 0 && ' · Agotado'}
+                                        </span>
+                                    </div>
+                                    <ActionButtons
+                                        onEdit={() => onEdit(producto)}
+                                        onDelete={() => onDelete(producto.id)}
+                                    />
+                                </div>
+                            </div>
                         ))}
-                    </tbody>
-                </table>
-            </div>
+                    </div>
+                    <Pagination
+                        page={page}
+                        totalPages={totalPages}
+                        totalItems={totalItems}
+                        from={from}
+                        to={to}
+                        onPageChange={setPage}
+                    />
+                </>
+            ) : (
+                <div className="bg-base-100 shadow-md rounded-box overflow-hidden border border-base-300">
+                    <div className="overflow-x-auto">
+                        <table className="table w-full">
+                            <thead className="bg-base-200/80 text-base-content text-sm uppercase">
+                                <tr>
+                                    <th className="w-36 py-4">Foto</th>
+                                    <th className="w-16">ID</th>
+                                    <th>Nombre</th>
+                                    <th className="hidden md:table-cell">Descripción</th>
+                                    <th>Precio</th>
+                                    <th>Stock</th>
+                                    <th>Estado</th>
+                                    <th className="text-center w-52">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {paginatedItems.map((producto) => (
+                                    <tr key={producto.id} className="hover:bg-base-200/40 border-b border-base-200">
+                                        <td className="align-middle py-4">
+                                            <div className="flex justify-center">
+                                                <ProductImage
+                                                    src={producto.imagenUrl}
+                                                    alt={producto.nombre}
+                                                    size="table"
+                                                    zoomable
+                                                />
+                                            </div>
+                                        </td>
+                                        <td className="align-middle font-mono text-sm opacity-70">{producto.id}</td>
+                                        <td className="align-middle font-semibold">{producto.nombre}</td>
+                                        <td className="align-middle text-base-content/70 max-w-xs truncate hidden md:table-cell" title={producto.descripcion}>
+                                            {producto.descripcion || '-'}
+                                        </td>
+                                        <td className="align-middle font-bold text-success whitespace-nowrap">
+                                            S/ {Number(producto.precio).toFixed(2)}
+                                        </td>
+                                        <td className="align-middle">
+                                            <span className={producto.stock <= 5 ? 'text-warning font-medium' : ''}>
+                                                {producto.stock} unds.
+                                            </span>
+                                        </td>
+                                        <td className="align-middle">
+                                            <div className={`badge badge-sm ${producto.estado ? 'badge-success' : 'badge-error'}`}>
+                                                {producto.estado ? 'Activo' : 'Inactivo'}
+                                            </div>
+                                        </td>
+                                        <td className="align-middle">
+                                            <ActionButtons
+                                                onEdit={() => onEdit(producto)}
+                                                onDelete={() => onDelete(producto.id)}
+                                            />
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div className="px-4 pb-4">
+                        <Pagination
+                            page={page}
+                            totalPages={totalPages}
+                            totalItems={totalItems}
+                            from={from}
+                            to={to}
+                            onPageChange={setPage}
+                        />
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

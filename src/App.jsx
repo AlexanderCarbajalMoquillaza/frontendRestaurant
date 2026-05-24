@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import toast, { Toaster } from 'react-hot-toast';
 import Swal from 'sweetalert2';
 
@@ -11,6 +11,8 @@ import ProductoList from './components/ProductoList';
 import ProductoForm from './components/ProductoForm';
 import PedidoList from './components/PedidoList';
 import PedidoForm from './components/PedidoForm';
+import StatsCards from './components/StatsCards';
+import ThemeToggle from './components/ThemeToggle';
 
 function App() {
     const { user, loading: authLoading, logout } = useAuth();
@@ -163,6 +165,31 @@ function App() {
         }
     };
 
+    const statsProductos = useMemo(() => {
+        const activos = productos.filter((p) => p.estado).length;
+        const stockBajo = productos.filter((p) => p.stock <= 5 && p.stock > 0).length;
+        return [
+            { label: 'Total productos', value: productos.length, color: 'text-primary' },
+            { label: 'Activos', value: activos, color: 'text-success' },
+            { label: 'Inactivos', value: productos.length - activos, color: 'text-error' },
+            { label: 'Stock bajo', value: stockBajo, color: 'text-warning', desc: '≤ 5 unidades' },
+        ];
+    }, [productos]);
+
+    const statsPedidos = useMemo(() => {
+        const pendientes = pedidos.filter((p) => p.estado === 'PENDIENTE').length;
+        const completados = pedidos.filter((p) => p.estado === 'COMPLETADO').length;
+        const ventas = pedidos
+            .filter((p) => p.estado === 'COMPLETADO')
+            .reduce((sum, p) => sum + Number(p.total || 0), 0);
+        return [
+            { label: 'Total pedidos', value: pedidos.length, color: 'text-primary' },
+            { label: 'Pendientes', value: pendientes, color: 'text-warning' },
+            { label: 'Completados', value: completados, color: 'text-success' },
+            { label: 'Ventas', value: `S/ ${ventas.toFixed(2)}`, color: 'text-success', desc: 'Pedidos completados' },
+        ];
+    }, [pedidos]);
+
     const handleLogout = () => {
         logout();
         toast.success('Sesión cerrada correctamente.');
@@ -190,10 +217,10 @@ function App() {
             <Toaster position="top-right" />
 
             {/* Navbar */}
-            <div className="navbar bg-base-100 shadow-sm px-4 md:px-8 border-b border-base-300">
-                <div className="flex-1">
-                    <span className="text-xl font-bold px-2">Panel de Administración</span>
-                    <span className="badge badge-ghost badge-sm hidden sm:inline-flex">{user.username}</span>
+            <div className="navbar bg-base-100 shadow-md px-4 md:px-8 border-b border-base-300 sticky top-0 z-40">
+                <div className="flex-1 gap-2">
+                    <span className="text-xl font-bold">🍽️ Panel de Administración</span>
+                    <span className="badge badge-primary badge-outline badge-sm hidden sm:inline-flex">{user.username}</span>
                 </div>
                 <div className="flex-none gap-2">
                     <button
@@ -208,6 +235,7 @@ function App() {
                     >
                         Pedidos
                     </button>
+                    <ThemeToggle />
                     <button
                         className="btn btn-sm btn-ghost text-error"
                         onClick={handleLogout}
@@ -235,6 +263,9 @@ function App() {
                             <div className="alert alert-error shadow-lg mb-6">
                                 <span>{errorProductos}</span>
                             </div>
+                        )}
+                        {!loadingProductos && productos.length > 0 && (
+                            <StatsCards items={statsProductos} />
                         )}
                         <div className="flex flex-col lg:flex-row gap-6 items-start">
                             <div className={`w-full transition-all duration-300 ${formProductoVisible ? 'lg:w-2/3' : 'lg:w-full'}`}>
@@ -279,6 +310,9 @@ function App() {
                             <div className="alert alert-error shadow-lg mb-6">
                                 <span>{errorPedidos}</span>
                             </div>
+                        )}
+                        {!loadingPedidos && pedidos.length > 0 && (
+                            <StatsCards items={statsPedidos} />
                         )}
                         <div className="flex flex-col lg:flex-row gap-6 items-start">
                             <div className={`w-full transition-all duration-300 ${formPedidoVisible ? 'lg:w-2/3' : 'lg:w-full'}`}>

@@ -18,6 +18,7 @@ const ProductImage = ({
         md: 'w-24 h-24',
         lg: 'w-36 h-36',
         xl: 'w-44 h-44',
+        table: 'w-28 h-28 min-w-[7rem] min-h-[7rem]',
     };
 
     const imageUrl = !error && src ? src : getFallbackUrl(alt, 256);
