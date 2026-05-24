@@ -62,6 +62,7 @@ const ProductoForm = ({ onSubmit, onCancel, productoAEditar }) => {
         const productoParseado = {
             nombre: formData.nombre,
             descripcion: formData.descripcion,
+            imagenUrl: formData.imagenUrl || null,
             precio: parseFloat(formData.precio),
             stock: parseInt(formData.stock, 10),
             estado: formData.estado,
