@@ -6,7 +6,8 @@ const ProductoForm = ({ onSubmit, onCancel, productoAEditar }) => {
         descripcion: '',
         precio: '',
         stock: '',
-        estado: true
+        estado: true,
+        imagenUrl: '',
     });
 
     const [error, setError] = useState(null);
@@ -18,7 +19,8 @@ const ProductoForm = ({ onSubmit, onCancel, productoAEditar }) => {
                 descripcion: productoAEditar.descripcion || '',
                 precio: productoAEditar.precio !== undefined ? productoAEditar.precio : '',
                 stock: productoAEditar.stock !== undefined ? productoAEditar.stock : '',
-                estado: productoAEditar.estado !== undefined ? productoAEditar.estado : true
+                estado: productoAEditar.estado !== undefined ? productoAEditar.estado : true,
+                imagenUrl: productoAEditar.imagenUrl || '',
             });
         } else {
             setFormData({
@@ -26,7 +28,8 @@ const ProductoForm = ({ onSubmit, onCancel, productoAEditar }) => {
                 descripcion: '',
                 precio: '',
                 stock: '',
-                estado: true
+                estado: true,
+                imagenUrl: '',
             });
         }
     }, [productoAEditar]);
@@ -35,15 +38,14 @@ const ProductoForm = ({ onSubmit, onCancel, productoAEditar }) => {
         const { name, value, type, checked } = e.target;
         setFormData({
             ...formData,
-            [name]: type === 'checkbox' ? checked : value
+            [name]: type === 'checkbox' ? checked : value,
         });
     };
 
     const handleSubmit = (e) => {
         e.preventDefault();
         setError(null);
-        
-        // Validación básica
+
         if (!formData.nombre.trim()) {
             setError('El nombre del producto no puede estar vacío.');
             return;
@@ -58,13 +60,19 @@ const ProductoForm = ({ onSubmit, onCancel, productoAEditar }) => {
         }
 
         const productoParseado = {
-            ...formData,
+            nombre: formData.nombre,
+            descripcion: formData.descripcion,
             precio: parseFloat(formData.precio),
-            stock: parseInt(formData.stock, 10)
+            stock: parseInt(formData.stock, 10),
+            estado: formData.estado,
         };
 
         onSubmit(productoParseado);
     };
+
+    const imagenPreview =
+        formData.imagenUrl ||
+        `https://ui-avatars.com/api/?name=${encodeURIComponent(formData.nombre || 'P')}&background=random&size=96`;
 
     return (
         <div className="card bg-base-100 shadow-xl border border-base-200">
@@ -72,71 +80,100 @@ const ProductoForm = ({ onSubmit, onCancel, productoAEditar }) => {
                 <h3 className="card-title text-xl mb-4">
                     {productoAEditar ? 'Editar Producto' : 'Nuevo Producto'}
                 </h3>
-                
+
                 {error && (
                     <div className="alert alert-error shadow-sm p-3 mb-4 text-sm">
                         <span>{error}</span>
                     </div>
                 )}
-                
+
                 <form onSubmit={handleSubmit} className="space-y-4">
+                    {/* Previsualización de imagen */}
+                    <div className="flex flex-col items-center gap-2">
+                        <img
+                            src={imagenPreview}
+                            alt="Vista previa"
+                            className="w-24 h-24 rounded-xl object-cover border border-base-300 shadow-sm"
+                            onError={(e) => {
+                                e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(formData.nombre || 'P')}&background=random&size=96`;
+                            }}
+                        />
+                        <p className="text-xs text-base-content/50">Vista previa de la imagen</p>
+                    </div>
+
+                    <div className="form-control w-full">
+                        <label className="label" htmlFor="imagenUrl">
+                            <span className="label-text font-medium">URL de imagen</span>
+                            <span className="label-text-alt text-base-content/50">Opcional</span>
+                        </label>
+                        <input
+                            type="url"
+                            id="imagenUrl"
+                            name="imagenUrl"
+                            className="input input-bordered w-full focus:input-primary text-sm"
+                            value={formData.imagenUrl}
+                            onChange={handleChange}
+                            placeholder="https://ejemplo.com/imagen.jpg"
+                        />
+                    </div>
+
                     <div className="form-control w-full">
                         <label className="label" htmlFor="nombre">
                             <span className="label-text font-medium">Nombre</span>
                         </label>
-                        <input 
-                            type="text" 
-                            id="nombre" 
-                            name="nombre" 
-                            className="input input-bordered w-full focus:input-primary" 
-                            value={formData.nombre} 
-                            onChange={handleChange} 
+                        <input
+                            type="text"
+                            id="nombre"
+                            name="nombre"
+                            className="input input-bordered w-full focus:input-primary"
+                            value={formData.nombre}
+                            onChange={handleChange}
                             placeholder="Ej. Ceviche"
                         />
                     </div>
-                    
+
                     <div className="form-control w-full">
                         <label className="label" htmlFor="descripcion">
                             <span className="label-text font-medium">Descripción</span>
                         </label>
-                        <textarea 
-                            id="descripcion" 
-                            name="descripcion" 
-                            className="textarea textarea-bordered focus:textarea-primary h-24" 
-                            value={formData.descripcion} 
+                        <textarea
+                            id="descripcion"
+                            name="descripcion"
+                            className="textarea textarea-bordered focus:textarea-primary h-20"
+                            value={formData.descripcion}
                             onChange={handleChange}
                             placeholder="Breve descripción del producto"
                         ></textarea>
                     </div>
-                    
+
                     <div className="grid grid-cols-2 gap-4">
                         <div className="form-control w-full">
                             <label className="label" htmlFor="precio">
                                 <span className="label-text font-medium">Precio</span>
                             </label>
-                            <input 
-                                type="number" 
-                                id="precio" 
-                                name="precio" 
-                                className="input input-bordered w-full focus:input-primary" 
-                                value={formData.precio} 
-                                onChange={handleChange} 
+                            <input
+                                type="number"
+                                id="precio"
+                                name="precio"
+                                className="input input-bordered w-full focus:input-primary"
+                                value={formData.precio}
+                                onChange={handleChange}
                                 min="0"
                                 step="0.01"
                             />
                         </div>
-                        
+
                         <div className="form-control w-full">
                             <label className="label" htmlFor="stock">
                                 <span className="label-text font-medium">Stock</span>
                             </label>
-                            <input 
-                                type="number" 
-                                id="stock" 
-                                name="stock" 
-                                className="input input-bordered w-full focus:input-primary" 
-                                value={formData.stock} 
-                                onChange={handleChange} 
+                            <input
+                                type="number"
+                                id="stock"
+                                name="stock"
+                                className="input input-bordered w-full focus:input-primary"
+                                value={formData.stock}
+                                onChange={handleChange}
                                 min="0"
                                 step="1"
                             />
@@ -145,13 +182,13 @@ const ProductoForm = ({ onSubmit, onCancel, productoAEditar }) => {
 
                     <div className="form-control mt-4">
                         <label className="label cursor-pointer justify-start gap-3" htmlFor="estado">
-                            <input 
-                                type="checkbox" 
-                                id="estado" 
-                                name="estado" 
-                                className="checkbox checkbox-primary" 
-                                checked={formData.estado} 
-                                onChange={handleChange} 
+                            <input
+                                type="checkbox"
+                                id="estado"
+                                name="estado"
+                                className="checkbox checkbox-primary"
+                                checked={formData.estado}
+                                onChange={handleChange}
                             />
                             <span className="label-text">Activo (Disponible para la venta)</span>
                         </label>

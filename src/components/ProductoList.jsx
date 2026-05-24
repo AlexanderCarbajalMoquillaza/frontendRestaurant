@@ -1,5 +1,5 @@
 const ProductoList = ({ productos, onEdit, onDelete }) => {
-    
+
     if (!productos || productos.length === 0) {
         return (
             <div className="card bg-base-100 shadow-md">
@@ -16,6 +16,7 @@ const ProductoList = ({ productos, onEdit, onDelete }) => {
                 <table className="table table-zebra w-full">
                     <thead className="bg-base-200 text-base-content">
                         <tr>
+                            <th>Foto</th>
                             <th>ID</th>
                             <th>Nombre</th>
                             <th>Descripción</th>
@@ -28,6 +29,19 @@ const ProductoList = ({ productos, onEdit, onDelete }) => {
                     <tbody>
                         {productos.map((producto) => (
                             <tr key={producto.id} className="hover">
+                                <td>
+                                    <img
+                                        src={
+                                            producto.imagenUrl ||
+                                            `https://ui-avatars.com/api/?name=${encodeURIComponent(producto.nombre)}&background=random&size=40`
+                                        }
+                                        alt={producto.nombre}
+                                        className="w-10 h-10 rounded-lg object-cover"
+                                        onError={(e) => {
+                                            e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(producto.nombre)}&background=random&size=40`;
+                                        }}
+                                    />
+                                </td>
                                 <td>{producto.id}</td>
                                 <td className="font-semibold">{producto.nombre}</td>
                                 <td className="text-base-content/70 max-w-xs truncate" title={producto.descripcion}>
@@ -38,20 +52,20 @@ const ProductoList = ({ productos, onEdit, onDelete }) => {
                                 </td>
                                 <td>{producto.stock} unds.</td>
                                 <td>
-                                    <div className={`badge ${producto.estado ? 'badge-success gap-1' : 'badge-error gap-1'}`}>
+                                    <div className={`badge ${producto.estado ? 'badge-success' : 'badge-error'}`}>
                                         {producto.estado ? 'Activo' : 'Inactivo'}
                                     </div>
                                 </td>
                                 <td className="flex justify-center gap-2">
-                                    <button 
-                                        className="btn btn-sm btn-ghost text-info" 
+                                    <button
+                                        className="btn btn-sm btn-ghost text-info"
                                         onClick={() => onEdit(producto)}
                                         title="Editar"
                                     >
                                         Editar
                                     </button>
-                                    <button 
-                                        className="btn btn-sm btn-ghost text-error" 
+                                    <button
+                                        className="btn btn-sm btn-ghost text-error"
                                         onClick={() => onDelete(producto.id)}
                                         title="Eliminar"
                                     >

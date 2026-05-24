@@ -267,6 +267,7 @@ function App() {
                                         onSubmit={handleCrearOActualizarPedido}
                                         onCancel={() => { setFormPedidoVisible(false); setPedidoAEditar(null); }}
                                         pedidoAEditar={pedidoAEditar}
+                                        productos={productos}
                                     />
                                 </div>
                             )}

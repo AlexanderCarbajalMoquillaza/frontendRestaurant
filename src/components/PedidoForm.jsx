@@ -1,16 +1,18 @@
 import { useState, useEffect } from 'react';
 
-const PedidoForm = ({ onSubmit, onCancel, pedidoAEditar }) => {
+const PedidoForm = ({ onSubmit, onCancel, pedidoAEditar, productos }) => {
     const [formData, setFormData] = useState({
         cliente: '',
         correoCliente: '',
         productoId: '',
         nombreProducto: '',
-        cantidad: '',
         precioUnitario: '',
+        cantidad: '',
     });
 
     const [error, setError] = useState(null);
+
+    const productosActivos = productos ? productos.filter((p) => p.estado === true) : [];
 
     useEffect(() => {
         if (pedidoAEditar) {
@@ -19,8 +21,8 @@ const PedidoForm = ({ onSubmit, onCancel, pedidoAEditar }) => {
                 correoCliente: pedidoAEditar.correoCliente || '',
                 productoId: pedidoAEditar.productoId || '',
                 nombreProducto: pedidoAEditar.nombreProducto || '',
-                cantidad: pedidoAEditar.cantidad || '',
                 precioUnitario: pedidoAEditar.precioUnitario || '',
+                cantidad: pedidoAEditar.cantidad || '',
             });
         } else {
             setFormData({
@@ -28,8 +30,8 @@ const PedidoForm = ({ onSubmit, onCancel, pedidoAEditar }) => {
                 correoCliente: '',
                 productoId: '',
                 nombreProducto: '',
-                cantidad: '',
                 precioUnitario: '',
+                cantidad: '',
             });
         }
     }, [pedidoAEditar]);
@@ -37,6 +39,23 @@ const PedidoForm = ({ onSubmit, onCancel, pedidoAEditar }) => {
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData({ ...formData, [name]: value });
+    };
+
+    const handleProductoSeleccionado = (e) => {
+        const id = e.target.value;
+        if (!id) {
+            setFormData({ ...formData, productoId: '', nombreProducto: '', precioUnitario: '' });
+            return;
+        }
+        const producto = productosActivos.find((p) => String(p.id) === String(id));
+        if (producto) {
+            setFormData({
+                ...formData,
+                productoId: producto.id,
+                nombreProducto: producto.nombre,
+                precioUnitario: producto.precio,
+            });
+        }
     };
 
     const handleSubmit = (e) => {
@@ -51,26 +70,20 @@ const PedidoForm = ({ onSubmit, onCancel, pedidoAEditar }) => {
             setError('Ingresa un correo electrónico válido.');
             return;
         }
-        if (!formData.productoId || Number(formData.productoId) <= 0) {
-            setError('El ID del producto es obligatorio y debe ser mayor a 0.');
-            return;
-        }
-        if (!formData.nombreProducto.trim()) {
-            setError('El nombre del producto no puede estar vacío.');
+        if (!formData.productoId) {
+            setError('Debes seleccionar un producto.');
             return;
         }
         if (!formData.cantidad || Number(formData.cantidad) < 1) {
             setError('La cantidad mínima es 1.');
             return;
         }
-        if (!formData.precioUnitario || Number(formData.precioUnitario) < 0) {
-            setError('El precio unitario debe ser mayor o igual a 0.');
-            return;
-        }
 
         const pedidoParseado = {
-            ...formData,
+            cliente: formData.cliente,
+            correoCliente: formData.correoCliente,
             productoId: parseInt(formData.productoId, 10),
+            nombreProducto: formData.nombreProducto,
             cantidad: parseInt(formData.cantidad, 10),
             precioUnitario: parseFloat(formData.precioUnitario),
         };
@@ -78,9 +91,14 @@ const PedidoForm = ({ onSubmit, onCancel, pedidoAEditar }) => {
         onSubmit(pedidoParseado);
     };
 
-    const totalEstimado = formData.cantidad && formData.precioUnitario
-        ? (Number(formData.cantidad) * Number(formData.precioUnitario)).toFixed(2)
-        : '0.00';
+    const totalEstimado =
+        formData.cantidad && formData.precioUnitario
+            ? (Number(formData.cantidad) * Number(formData.precioUnitario)).toFixed(2)
+            : '0.00';
+
+    const productoSeleccionado = productosActivos.find(
+        (p) => String(p.id) === String(formData.productoId)
+    );
 
     return (
         <div className="card bg-base-100 shadow-xl border border-base-200">
@@ -126,69 +144,72 @@ const PedidoForm = ({ onSubmit, onCancel, pedidoAEditar }) => {
                         />
                     </div>
 
-                    <div className="grid grid-cols-2 gap-3">
-                        <div className="form-control w-full">
-                            <label className="label" htmlFor="productoId">
-                                <span className="label-text font-medium">ID Producto</span>
-                            </label>
-                            <input
-                                type="number"
-                                id="productoId"
-                                name="productoId"
-                                className="input input-bordered w-full focus:input-primary"
+                    <div className="form-control w-full">
+                        <label className="label" htmlFor="productoSeleccion">
+                            <span className="label-text font-medium">Producto disponible</span>
+                        </label>
+                        {productosActivos.length === 0 ? (
+                            <div className="alert alert-warning text-sm p-3">
+                                No hay productos activos disponibles.
+                            </div>
+                        ) : (
+                            <select
+                                id="productoSeleccion"
+                                className="select select-bordered w-full focus:select-primary"
                                 value={formData.productoId}
-                                onChange={handleChange}
-                                min="1"
-                            />
-                        </div>
-
-                        <div className="form-control w-full">
-                            <label className="label" htmlFor="nombreProducto">
-                                <span className="label-text font-medium">Nombre producto</span>
-                            </label>
-                            <input
-                                type="text"
-                                id="nombreProducto"
-                                name="nombreProducto"
-                                className="input input-bordered w-full focus:input-primary"
-                                value={formData.nombreProducto}
-                                onChange={handleChange}
-                                placeholder="Ej. Ceviche"
-                            />
-                        </div>
+                                onChange={handleProductoSeleccionado}
+                            >
+                                <option value="">-- Selecciona un producto --</option>
+                                {productosActivos.map((p) => (
+                                    <option key={p.id} value={p.id}>
+                                        {p.nombre} — S/ {Number(p.precio).toFixed(2)}
+                                    </option>
+                                ))}
+                            </select>
+                        )}
                     </div>
 
-                    <div className="grid grid-cols-2 gap-3">
-                        <div className="form-control w-full">
-                            <label className="label" htmlFor="cantidad">
-                                <span className="label-text font-medium">Cantidad</span>
-                            </label>
-                            <input
-                                type="number"
-                                id="cantidad"
-                                name="cantidad"
-                                className="input input-bordered w-full focus:input-primary"
-                                value={formData.cantidad}
-                                onChange={handleChange}
-                                min="1"
+                    {productoSeleccionado && (
+                        <div className="flex items-center gap-3 bg-base-200 rounded-box p-3">
+                            <img
+                                src={
+                                    productoSeleccionado.imagenUrl ||
+                                    `https://ui-avatars.com/api/?name=${encodeURIComponent(productoSeleccionado.nombre)}&background=random&size=48`
+                                }
+                                alt={productoSeleccionado.nombre}
+                                className="w-12 h-12 rounded-lg object-cover"
                             />
+                            <div>
+                                <p className="font-semibold text-sm">{productoSeleccionado.nombre}</p>
+                                <p className="text-xs text-base-content/60">
+                                    Stock disponible: {productoSeleccionado.stock} unds.
+                                </p>
+                            </div>
                         </div>
+                    )}
 
-                        <div className="form-control w-full">
-                            <label className="label" htmlFor="precioUnitario">
-                                <span className="label-text font-medium">Precio unit.</span>
+                    <div className="form-control w-full">
+                        <label className="label" htmlFor="cantidad">
+                            <span className="label-text font-medium">Cantidad</span>
+                        </label>
+                        <input
+                            type="number"
+                            id="cantidad"
+                            name="cantidad"
+                            className="input input-bordered w-full focus:input-primary"
+                            value={formData.cantidad}
+                            onChange={handleChange}
+                            min="1"
+                            max={productoSeleccionado ? productoSeleccionado.stock : undefined}
+                            placeholder="Ej. 2"
+                        />
+                        {productoSeleccionado && (
+                            <label className="label">
+                                <span className="label-text-alt text-base-content/50">
+                                    Máximo: {productoSeleccionado.stock} unds.
+                                </span>
                             </label>
-                            <input
-                                type="number"
-                                id="precioUnitario"
-                                name="precioUnitario"
-                                className="input input-bordered w-full focus:input-primary"
-                                value={formData.precioUnitario}
-                                onChange={handleChange}
-                                min="0"
-                                step="0.01"
-                            />
-                        </div>
+                        )}
                     </div>
 
                     <div className="stat bg-base-200 rounded-box py-2 px-4">
