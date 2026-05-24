@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import ProductImage from './ProductImage';
 
 const PedidoForm = ({ onSubmit, onCancel, pedidoAEditar, productos }) => {
     const [formData, setFormData] = useState({
@@ -170,18 +171,15 @@ const PedidoForm = ({ onSubmit, onCancel, pedidoAEditar, productos }) => {
                     </div>
 
                     {productoSeleccionado && (
-                        <div className="flex items-center gap-3 bg-base-200 rounded-box p-3">
-                            <img
-                                src={
-                                    productoSeleccionado.imagenUrl ||
-                                    `https://ui-avatars.com/api/?name=${encodeURIComponent(productoSeleccionado.nombre)}&background=random&size=48`
-                                }
+                        <div className="flex items-center gap-4 bg-base-200 rounded-box p-4">
+                            <ProductImage
+                                src={productoSeleccionado.imagenUrl}
                                 alt={productoSeleccionado.nombre}
-                                className="w-12 h-12 rounded-lg object-cover"
+                                size="md"
                             />
                             <div>
-                                <p className="font-semibold text-sm">{productoSeleccionado.nombre}</p>
-                                <p className="text-xs text-base-content/60">
+                                <p className="font-semibold">{productoSeleccionado.nombre}</p>
+                                <p className="text-sm text-base-content/60">
                                     Stock disponible: {productoSeleccionado.stock} unds.
                                 </p>
                             </div>

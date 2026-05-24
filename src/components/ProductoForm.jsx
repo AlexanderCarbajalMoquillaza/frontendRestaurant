@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import ProductImage from './ProductImage';
 
 const ProductoForm = ({ onSubmit, onCancel, productoAEditar }) => {
     const [formData, setFormData] = useState({
@@ -71,12 +72,8 @@ const ProductoForm = ({ onSubmit, onCancel, productoAEditar }) => {
         onSubmit(productoParseado);
     };
 
-    const imagenPreview =
-        formData.imagenUrl ||
-        `https://ui-avatars.com/api/?name=${encodeURIComponent(formData.nombre || 'P')}&background=random&size=96`;
-
     return (
-        <div className="card bg-base-100 shadow-xl border border-base-200">
+        <div className="card bg-base-100 shadow-xl border border-base-300">
             <div className="card-body">
                 <h3 className="card-title text-xl mb-4">
                     {productoAEditar ? 'Editar Producto' : 'Nuevo Producto'}
@@ -89,17 +86,14 @@ const ProductoForm = ({ onSubmit, onCancel, productoAEditar }) => {
                 )}
 
                 <form onSubmit={handleSubmit} className="space-y-4">
-                    {/* Previsualización de imagen */}
-                    <div className="flex flex-col items-center gap-2">
-                        <img
-                            src={imagenPreview}
-                            alt="Vista previa"
-                            className="w-24 h-24 rounded-xl object-cover border border-base-300 shadow-sm"
-                            onError={(e) => {
-                                e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(formData.nombre || 'P')}&background=random&size=96`;
-                            }}
+                    <div className="flex flex-col items-center gap-2 py-2">
+                        <ProductImage
+                            src={formData.imagenUrl}
+                            alt={formData.nombre || 'Producto'}
+                            size="xl"
+                            zoomable
                         />
-                        <p className="text-xs text-base-content/50">Vista previa de la imagen</p>
+                        <p className="text-xs text-base-content/50">Vista previa — haz clic para ampliar</p>
                     </div>
 
                     <div className="form-control w-full">

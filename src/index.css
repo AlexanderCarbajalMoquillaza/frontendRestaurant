@@ -1,4 +1,41 @@
 @import "tailwindcss";
 @plugin "daisyui" {
-    themes: light --default;
+    themes: admin --default;
+}
+
+@plugin "daisyui/theme" {
+    name: "admin";
+    default: true;
+    prefersdark: false;
+    color-scheme: light;
+
+    --color-base-100: oklch(100% 0 0);
+    --color-base-200: oklch(97.5% 0.005 260);
+    --color-base-300: oklch(92% 0.008 260);
+    --color-base-content: oklch(25% 0.02 260);
+
+    --color-primary: oklch(55% 0.18 250);
+    --color-primary-content: oklch(98% 0.01 250);
+
+    --color-secondary: oklch(65% 0.12 200);
+    --color-secondary-content: oklch(98% 0.01 200);
+
+    --color-accent: oklch(72% 0.15 45);
+    --color-accent-content: oklch(25% 0.05 45);
+
+    --color-neutral: oklch(35% 0.02 260);
+    --color-neutral-content: oklch(98% 0.01 260);
+
+    --color-info: oklch(62% 0.15 230);
+    --color-success: oklch(62% 0.17 155);
+    --color-warning: oklch(78% 0.15 80);
+    --color-error: oklch(58% 0.2 25);
+
+    --radius-selector: 0.5rem;
+    --radius-field: 0.5rem;
+    --radius-box: 0.75rem;
+}
+
+body {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }

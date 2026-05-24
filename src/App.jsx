@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import toast, { Toaster } from 'react-hot-toast';
 import Swal from 'sweetalert2';
 
+import { useAuth } from './context/AuthContext';
+import Login from './components/Login';
 import { getProductos, createProducto, updateProducto, deleteProducto } from './services/api';
 import { getPedidos, createPedido, updatePedido, deletePedido, updateEstadoPedido } from './services/pedidosApi';
 
@@ -11,6 +13,7 @@ import PedidoList from './components/PedidoList';
 import PedidoForm from './components/PedidoForm';
 
 function App() {
+    const { user, loading: authLoading, logout } = useAuth();
     const [vistaActiva, setVistaActiva] = useState('productos');
 
     // Estado de Productos
@@ -28,9 +31,11 @@ function App() {
     const [formPedidoVisible, setFormPedidoVisible] = useState(false);
 
     useEffect(() => {
-        cargarProductos();
-        cargarPedidos();
-    }, []);
+        if (user) {
+            cargarProductos();
+            cargarPedidos();
+        }
+    }, [user]);
 
     // ---- Funciones de Productos ----
     const cargarProductos = async () => {
@@ -158,14 +163,37 @@ function App() {
         }
     };
 
+    const handleLogout = () => {
+        logout();
+        toast.success('Sesión cerrada correctamente.');
+    };
+
+    if (authLoading) {
+        return (
+            <div className="min-h-screen bg-base-200 flex items-center justify-center">
+                <span className="loading loading-spinner loading-lg text-primary"></span>
+            </div>
+        );
+    }
+
+    if (!user) {
+        return (
+            <>
+                <Toaster position="top-right" />
+                <Login />
+            </>
+        );
+    }
+
     return (
         <div className="min-h-screen bg-base-200">
             <Toaster position="top-right" />
 
             {/* Navbar */}
-            <div className="navbar bg-base-100 shadow-sm px-4 md:px-8">
+            <div className="navbar bg-base-100 shadow-sm px-4 md:px-8 border-b border-base-300">
                 <div className="flex-1">
-                    <a className="btn btn-ghost normal-case text-xl font-bold">Panel de Administración</a>
+                    <span className="text-xl font-bold px-2">Panel de Administración</span>
+                    <span className="badge badge-ghost badge-sm hidden sm:inline-flex">{user.username}</span>
                 </div>
                 <div className="flex-none gap-2">
                     <button
@@ -179,6 +207,12 @@ function App() {
                         onClick={() => { setVistaActiva('pedidos'); setFormPedidoVisible(false); }}
                     >
                         Pedidos
+                    </button>
+                    <button
+                        className="btn btn-sm btn-ghost text-error"
+                        onClick={handleLogout}
+                    >
+                        Cerrar sesión
                     </button>
                 </div>
             </div>

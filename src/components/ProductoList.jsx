@@ -1,3 +1,5 @@
+import ProductImage from './ProductImage';
+
 const ProductoList = ({ productos, onEdit, onDelete }) => {
 
     if (!productos || productos.length === 0) {
@@ -11,12 +13,12 @@ const ProductoList = ({ productos, onEdit, onDelete }) => {
     }
 
     return (
-        <div className="bg-base-100 shadow-md rounded-box overflow-hidden">
+        <div className="bg-base-100 shadow-md rounded-box overflow-hidden border border-base-300">
             <div className="overflow-x-auto">
                 <table className="table table-zebra w-full">
                     <thead className="bg-base-200 text-base-content">
                         <tr>
-                            <th>Foto</th>
+                            <th className="w-28">Foto</th>
                             <th>ID</th>
                             <th>Nombre</th>
                             <th>Descripción</th>
@@ -29,17 +31,12 @@ const ProductoList = ({ productos, onEdit, onDelete }) => {
                     <tbody>
                         {productos.map((producto) => (
                             <tr key={producto.id} className="hover">
-                                <td>
-                                    <img
-                                        src={
-                                            producto.imagenUrl ||
-                                            `https://ui-avatars.com/api/?name=${encodeURIComponent(producto.nombre)}&background=random&size=40`
-                                        }
+                                <td className="py-3">
+                                    <ProductImage
+                                        src={producto.imagenUrl}
                                         alt={producto.nombre}
-                                        className="w-10 h-10 rounded-lg object-cover"
-                                        onError={(e) => {
-                                            e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(producto.nombre)}&background=random&size=40`;
-                                        }}
+                                        size="md"
+                                        zoomable
                                     />
                                 </td>
                                 <td>{producto.id}</td>
