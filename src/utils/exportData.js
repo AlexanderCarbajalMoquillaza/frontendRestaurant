@@ -124,7 +124,7 @@ export const exportPedidosPDF = (pedidos) => {
         p.cantidad,
         `S/ ${Number(p.precioUnitario).toFixed(2)}`,
         `S/ ${Number(p.total).toFixed(2)}`,
-        p.estado,
+        p.estado?.replace(/_/g, ' ') ?? '',
     ]);
     openPrintReport('Reporte de Pedidos', headers, rows, `pedidos_${fechaArchivo()}`);
 };

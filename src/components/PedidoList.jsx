@@ -4,14 +4,15 @@ import ExportButtons from './ExportButtons';
 import Pagination from './Pagination';
 import { usePagination } from '../hooks/usePagination';
 import { exportPedidosExcel, exportPedidosPDF } from '../utils/exportData';
+import { ESTADOS_PEDIDO, ESTADOS_LEGACY, badgeEstado, etiquetaEstado } from '../constants/estadosPedido';
 
 const ITEMS_PER_PAGE = 10;
 
-const BADGE_ESTADO = {
-    PENDIENTE: 'badge-warning',
-    COMPLETADO: 'badge-success',
-    CANCELADO: 'badge-error',
-};
+const OPCIONES_FILTRO = [
+    { value: 'TODOS', label: 'Todos los estados' },
+    ...ESTADOS_PEDIDO.map((e) => ({ value: e.value, label: e.label })),
+    ...Object.entries(ESTADOS_LEGACY).map(([value, e]) => ({ value, label: e.label })),
+];
 
 const PedidoList = ({ pedidos, onEdit, onDelete, onCambiarEstado }) => {
     const [busqueda, setBusqueda] = useState('');
@@ -46,6 +47,14 @@ const PedidoList = ({ pedidos, onEdit, onDelete, onCambiarEstado }) => {
         to,
     } = usePagination(pedidosFiltrados, ITEMS_PER_PAGE, resetKey);
 
+    const opcionesEstadoPedido = (estadoActual) => {
+        const opciones = [...ESTADOS_PEDIDO];
+        if (ESTADOS_LEGACY[estadoActual] && !opciones.find((o) => o.value === estadoActual)) {
+            opciones.unshift({ value: estadoActual, label: ESTADOS_LEGACY[estadoActual].label });
+        }
+        return opciones;
+    };
+
     if (!pedidos || pedidos.length === 0) {
         return (
             <div className="card bg-base-100 shadow-md border border-base-300">
@@ -73,14 +82,13 @@ const PedidoList = ({ pedidos, onEdit, onDelete, onCambiarEstado }) => {
                         />
                     </label>
                     <select
-                        className="select select-bordered select-sm sm:w-44 bg-base-100"
+                        className="select select-bordered select-sm sm:w-52 bg-base-100"
                         value={filtroEstado}
                         onChange={(e) => setFiltroEstado(e.target.value)}
                     >
-                        <option value="TODOS">Todos los estados</option>
-                        <option value="PENDIENTE">Pendientes</option>
-                        <option value="COMPLETADO">Completados</option>
-                        <option value="CANCELADO">Cancelados</option>
+                        {OPCIONES_FILTRO.map((op) => (
+                            <option key={op.value} value={op.value}>{op.label}</option>
+                        ))}
                     </select>
                 </div>
                 <ExportButtons
@@ -125,13 +133,14 @@ const PedidoList = ({ pedidos, onEdit, onDelete, onCambiarEstado }) => {
                                         </td>
                                         <td className="align-middle">
                                             <select
-                                                className={`select select-bordered select-sm w-full max-w-[9rem] ${BADGE_ESTADO[pedido.estado] || ''}`}
+                                                className={`select select-bordered select-sm w-full max-w-[11rem] ${badgeEstado(pedido.estado)}`}
                                                 value={pedido.estado}
                                                 onChange={(e) => onCambiarEstado(pedido.id, e.target.value)}
+                                                title={etiquetaEstado(pedido.estado)}
                                             >
-                                                <option value="PENDIENTE">PENDIENTE</option>
-                                                <option value="COMPLETADO">COMPLETADO</option>
-                                                <option value="CANCELADO">CANCELADO</option>
+                                                {opcionesEstadoPedido(pedido.estado).map((op) => (
+                                                    <option key={op.value} value={op.value}>{op.label}</option>
+                                                ))}
                                             </select>
                                         </td>
                                         <td className="align-middle">

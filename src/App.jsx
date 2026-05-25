@@ -12,6 +12,7 @@ import ProductoForm from './components/ProductoForm';
 import PedidoList from './components/PedidoList';
 import PedidoForm from './components/PedidoForm';
 import StatsCards from './components/StatsCards';
+import { pedidoEnCurso, pedidoEntregado } from './constants/estadosPedido';
 import ThemeToggle from './components/ThemeToggle';
 import FormModal from './components/FormModal';
 
@@ -78,22 +79,22 @@ function App() {
 
     const handleEliminarProducto = async (id) => {
         const resultado = await Swal.fire({
-            title: '¿Eliminar producto?',
-            text: 'Esta acción no se puede deshacer.',
+            title: '¿Desactivar producto?',
+            text: 'El producto dejará de estar disponible para pedidos. Puedes reactivarlo editándolo.',
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#ef4444',
+            confirmButtonColor: '#f59e0b',
             cancelButtonColor: '#6b7280',
-            confirmButtonText: 'Sí, eliminar',
+            confirmButtonText: 'Sí, desactivar',
             cancelButtonText: 'Cancelar',
         });
         if (resultado.isConfirmed) {
             try {
                 await deleteProducto(id);
                 await cargarProductos();
-                toast.success('Producto eliminado correctamente.');
+                toast.success('Producto desactivado correctamente.');
             } catch (err) {
-                toast.error('Ocurrió un error al eliminar el producto.');
+                toast.error('Ocurrió un error al desactivar el producto.');
             }
         }
     };
@@ -119,13 +120,14 @@ function App() {
                 toast.success('Pedido actualizado correctamente.');
             } else {
                 await createPedido(pedido);
-                toast.success('Pedido creado correctamente.');
+                toast.success('Pedido creado. Stock actualizado.');
             }
             await cargarPedidos();
+            await cargarProductos();
             setPedidoAEditar(null);
             setFormPedidoVisible(false);
         } catch (err) {
-            toast.error('Ocurrió un error al guardar el pedido.');
+            toast.error(err.message || 'Ocurrió un error al guardar el pedido.');
         }
     };
 
@@ -149,9 +151,10 @@ function App() {
             try {
                 await deletePedido(id);
                 await cargarPedidos();
-                toast.success('Pedido eliminado correctamente.');
+                await cargarProductos();
+                toast.success('Pedido eliminado. Stock restaurado.');
             } catch (err) {
-                toast.error('Ocurrió un error al eliminar el pedido.');
+                toast.error(err.message || 'Ocurrió un error al eliminar el pedido.');
             }
         }
     };
@@ -160,9 +163,10 @@ function App() {
         try {
             await updateEstadoPedido(id, nuevoEstado);
             await cargarPedidos();
-            toast.success(`Estado actualizado a ${nuevoEstado}.`);
+            await cargarProductos();
+            toast.success(`Estado actualizado a ${nuevoEstado.replace(/_/g, ' ').toLowerCase()}.`);
         } catch (err) {
-            toast.error('Error al actualizar el estado del pedido.');
+            toast.error(err.message || 'Error al actualizar el estado del pedido.');
         }
     };
 
@@ -178,16 +182,16 @@ function App() {
     }, [productos]);
 
     const statsPedidos = useMemo(() => {
-        const pendientes = pedidos.filter((p) => p.estado === 'PENDIENTE').length;
-        const completados = pedidos.filter((p) => p.estado === 'COMPLETADO').length;
+        const enCurso = pedidos.filter((p) => pedidoEnCurso(p.estado)).length;
+        const entregados = pedidos.filter((p) => pedidoEntregado(p.estado)).length;
         const ventas = pedidos
-            .filter((p) => p.estado === 'COMPLETADO')
+            .filter((p) => pedidoEntregado(p.estado))
             .reduce((sum, p) => sum + Number(p.total || 0), 0);
         return [
             { label: 'Total pedidos', value: pedidos.length, color: 'text-primary' },
-            { label: 'Pendientes', value: pendientes, color: 'text-warning' },
-            { label: 'Completados', value: completados, color: 'text-success' },
-            { label: 'Ventas', value: `S/ ${ventas.toFixed(2)}`, color: 'text-success', desc: 'Pedidos completados' },
+            { label: 'En cocina / curso', value: enCurso, color: 'text-warning' },
+            { label: 'Entregados', value: entregados, color: 'text-success' },
+            { label: 'Ventas', value: `S/ ${ventas.toFixed(2)}`, color: 'text-success', desc: 'Pedidos entregados' },
         ];
     }, [pedidos]);
 

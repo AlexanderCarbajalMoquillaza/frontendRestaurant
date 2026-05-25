@@ -130,10 +130,12 @@ const ProductoList = ({ productos, onEdit, onDelete }) => {
                                             {producto.stock === 0 && ' · Agotado'}
                                         </span>
                                     </div>
-                                    <ActionButtons
-                                        onEdit={() => onEdit(producto)}
-                                        onDelete={() => onDelete(producto.id)}
-                                    />
+                                <ActionButtons
+                                    onEdit={() => onEdit(producto)}
+                                    onDelete={() => onDelete(producto.id)}
+                                    deleteLabel="Desactivar"
+                                    deleteBtnClass="btn-outline btn-warning"
+                                />
                                 </div>
                             </div>
                         ))}
@@ -195,10 +197,12 @@ const ProductoList = ({ productos, onEdit, onDelete }) => {
                                             </div>
                                         </td>
                                         <td className="align-middle">
-                                            <ActionButtons
-                                                onEdit={() => onEdit(producto)}
-                                                onDelete={() => onDelete(producto.id)}
-                                            />
+                                <ActionButtons
+                                    onEdit={() => onEdit(producto)}
+                                    onDelete={() => onDelete(producto.id)}
+                                    deleteLabel="Desactivar"
+                                    deleteBtnClass="btn-outline btn-warning"
+                                />
                                         </td>
                                     </tr>
                                 ))}
