@@ -1,9 +1,7 @@
 import { useState, useMemo } from 'react';
 import ActionButtons from './ActionButtons';
-import ExportButtons from './ExportButtons';
 import Pagination from './Pagination';
 import { usePagination } from '../hooks/usePagination';
-import { exportPedidosExcel, exportPedidosPDF } from '../utils/exportData';
 import { ESTADOS_PEDIDO, ESTADOS_LEGACY, badgeEstado, etiquetaEstado } from '../constants/estadosPedido';
 
 const ITEMS_PER_PAGE = 10;
@@ -91,11 +89,6 @@ const PedidoList = ({ pedidos, onEdit, onDelete, onCambiarEstado }) => {
                         ))}
                     </select>
                 </div>
-                <ExportButtons
-                    disabled={pedidosFiltrados.length === 0}
-                    onExportExcel={() => exportPedidosExcel(pedidosFiltrados)}
-                    onExportPDF={() => exportPedidosPDF(pedidosFiltrados)}
-                />
             </div>
 
             {pedidosFiltrados.length === 0 ? (

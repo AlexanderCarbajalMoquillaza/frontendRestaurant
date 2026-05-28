@@ -1,31 +1,16 @@
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import ProductImage from './ProductImage';
 import ActionButtons from './ActionButtons';
-import ExportButtons from './ExportButtons';
 import Pagination from './Pagination';
 import { usePagination } from '../hooks/usePagination';
-import { exportProductosExcel, exportProductosPDF } from '../utils/exportData';
 
 const ITEMS_GRID = 6;
 const ITEMS_TABLE = 8;
 
 const ProductoList = ({ productos, onEdit, onDelete }) => {
-    const [busqueda, setBusqueda] = useState('');
     const [vista, setVista] = useState('grid');
 
-    const productosFiltrados = useMemo(() => {
-        if (!busqueda.trim()) return productos;
-        const q = busqueda.toLowerCase();
-        return productos.filter(
-            (p) =>
-                p.nombre?.toLowerCase().includes(q) ||
-                p.descripcion?.toLowerCase().includes(q) ||
-                String(p.id).includes(q)
-        );
-    }, [productos, busqueda]);
-
     const itemsPerPage = vista === 'grid' ? ITEMS_GRID : ITEMS_TABLE;
-    const resetKey = `${busqueda}-${vista}`;
 
     const {
         page,
@@ -35,7 +20,7 @@ const ProductoList = ({ productos, onEdit, onDelete }) => {
         totalItems,
         from,
         to,
-    } = usePagination(productosFiltrados, itemsPerPage, resetKey);
+    } = usePagination(productos, itemsPerPage, vista);
 
     if (!productos || productos.length === 0) {
         return (
@@ -49,25 +34,8 @@ const ProductoList = ({ productos, onEdit, onDelete }) => {
 
     return (
         <div className="space-y-4">
-            <div className="flex flex-col lg:flex-row gap-3 items-stretch lg:items-center justify-between">
-                <label className="input input-bordered flex items-center gap-2 flex-1 max-w-md bg-base-100">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 opacity-50 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
-                    <input
-                        type="search"
-                        placeholder="Buscar por nombre, descripción o ID..."
-                        className="grow"
-                        value={busqueda}
-                        onChange={(e) => setBusqueda(e.target.value)}
-                    />
-                </label>
+            <div className="flex justify-end items-center">
                 <div className="flex flex-wrap gap-2 items-center justify-end">
-                    <ExportButtons
-                        disabled={productosFiltrados.length === 0}
-                        onExportExcel={() => exportProductosExcel(productosFiltrados)}
-                        onExportPDF={() => exportProductosPDF(productosFiltrados)}
-                    />
                     <div className="join shadow-sm">
                         <button
                             type="button"
@@ -87,11 +55,7 @@ const ProductoList = ({ productos, onEdit, onDelete }) => {
                 </div>
             </div>
 
-            {productosFiltrados.length === 0 ? (
-                <div className="alert bg-base-100 border border-base-300">
-                    <span>No se encontraron productos con &quot;{busqueda}&quot;</span>
-                </div>
-            ) : vista === 'grid' ? (
+            {vista === 'grid' ? (
                 <>
                     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
                         {paginatedItems.map((producto) => (
