@@ -234,7 +234,7 @@ function App() {
             {/* Navbar */}
             <div className="navbar bg-base-100 shadow-md px-4 md:px-8 border-b border-base-300 sticky top-0 z-40">
                 <div className="flex-1 gap-2">
-                    <span className="text-xl font-bold">🍽️ Panel de Administración</span>
+                    <span className="text-xl font-bold">Panel de Administración</span>
                     <span className="badge badge-primary badge-outline badge-sm hidden sm:inline-flex">{user.username}</span>
                 </div>
                 <div className="flex-none gap-2">
